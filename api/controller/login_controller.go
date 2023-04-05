@@ -5,8 +5,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/bootstrap"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
+	"github.com/UxiT/rdp/bootstrap"
+	"github.com/UxiT/rdp/domain"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,9 +24,9 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := lc.LoginUsecase.GetUserByEmail(c, request.Email)
+	user, err := lc.LoginUsecase.GetUserByLogin(request.Login)
 	if err != nil {
-		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: "User not found with the given email"})
+		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 

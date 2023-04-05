@@ -1,11 +1,10 @@
 package usecase
 
 import (
-	"context"
 	"time"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/internal/tokenutil"
+	"github.com/UxiT/rdp/domain"
+	"github.com/UxiT/rdp/internal/tokenutil"
 )
 
 type signupUsecase struct {
@@ -20,16 +19,12 @@ func NewSignupUsecase(userRepository domain.UserRepository, timeout time.Duratio
 	}
 }
 
-func (su *signupUsecase) Create(c context.Context, user *domain.User) error {
-	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
-	defer cancel()
-	return su.userRepository.Create(ctx, user)
+func (su *signupUsecase) Create(user *domain.User) error {
+	return su.userRepository.Create(user)
 }
 
-func (su *signupUsecase) GetUserByEmail(c context.Context, email string) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(c, su.contextTimeout)
-	defer cancel()
-	return su.userRepository.GetByEmail(ctx, email)
+func (su *signupUsecase) GetUserByLogin(login string) (domain.User, error) {
+	return su.userRepository.GetByLogin(login)
 }
 
 func (su *signupUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {

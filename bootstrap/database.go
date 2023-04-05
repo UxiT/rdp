@@ -1,56 +1,35 @@
 package bootstrap
 
 import (
-	"context"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/mongo"
+	"github.com/UxiT/rdp/db"
 )
 
-func NewMongoDatabase(env *Env) mongo.Client {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
+func NewDatabase(env *Env) db.Database {
 	dbHost := env.DBHost
 	dbPort := env.DBPort
 	dbUser := env.DBUser
 	dbPass := env.DBPass
 
-	mongodbURI := fmt.Sprintf("mongodb://%s:%s@%s:%s", dbUser, dbPass, dbHost, dbPort)
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/lab?sslmode=disable", dbUser, dbPass, dbHost, dbPort)
 
-	if dbUser == "" || dbPass == "" {
-		mongodbURI = fmt.Sprintf("mongodb://%s:%s", dbHost, dbPort)
-	}
+	db, err := db.NewDatabase(connString)
 
-	client, err := mongo.NewClient(mongodbURI)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = client.Ping(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return client
+	return *db
 }
 
-func CloseMongoDBConnection(client mongo.Client) {
-	if client == nil {
-		return
-	}
+func closeDatabaseConnection(db *db.Database) {
+	err := db.Close()
 
-	err := client.Disconnect(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Connection to MongoDB closed.")
+	log.Println("Connection to DB closed")
 }

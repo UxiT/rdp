@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	route "github.com/amitshekhariitbhu/go-backend-clean-architecture/api/route"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/bootstrap"
+	route "github.com/UxiT/rdp/api/route"
+	"github.com/UxiT/rdp/bootstrap"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +14,7 @@ func main() {
 
 	env := app.Env
 
-	db := app.Mongo.Database(env.DBName)
+	db := app.DB
 	defer app.CloseDBConnection()
 
 	timeout := time.Duration(env.ContextTimeout) * time.Second

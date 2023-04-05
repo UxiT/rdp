@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/bootstrap"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
+	"github.com/UxiT/rdp/bootstrap"
+	"github.com/UxiT/rdp/domain"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ func (rtc *RefreshTokenController) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	user, err := rtc.RefreshTokenUsecase.GetUserByID(c, id)
+	user, err := rtc.RefreshTokenUsecase.GetUserById(id)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: "User not found"})
 		return

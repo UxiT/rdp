@@ -1,11 +1,10 @@
 package usecase
 
 import (
-	"context"
 	"time"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/internal/tokenutil"
+	"github.com/UxiT/rdp/domain"
+	"github.com/UxiT/rdp/internal/tokenutil"
 )
 
 type refreshTokenUsecase struct {
@@ -20,10 +19,8 @@ func NewRefreshTokenUsecase(userRepository domain.UserRepository, timeout time.D
 	}
 }
 
-func (rtu *refreshTokenUsecase) GetUserByID(c context.Context, email string) (domain.User, error) {
-	ctx, cancel := context.WithTimeout(c, rtu.contextTimeout)
-	defer cancel()
-	return rtu.userRepository.GetByID(ctx, email)
+func (rtu *refreshTokenUsecase) GetUserById(id string) (domain.User, error) {
+	return rtu.userRepository.GetById(id)
 }
 
 func (rtu *refreshTokenUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {

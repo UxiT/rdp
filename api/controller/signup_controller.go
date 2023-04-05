@@ -3,10 +3,9 @@ package controller
 import (
 	"net/http"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/bootstrap"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
+	"github.com/UxiT/rdp/bootstrap"
+	"github.com/UxiT/rdp/domain"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,7 +23,7 @@ func (sc *SignupController) Signup(c *gin.Context) {
 		return
 	}
 
-	_, err = sc.SignupUsecase.GetUserByEmail(c, request.Email)
+	_, err = sc.SignupUsecase.GetUserByLogin(request.Login)
 	if err == nil {
 		c.JSON(http.StatusConflict, domain.ErrorResponse{Message: "User already exists with the given email"})
 		return
@@ -42,13 +41,13 @@ func (sc *SignupController) Signup(c *gin.Context) {
 	request.Password = string(encryptedPassword)
 
 	user := domain.User{
-		ID:       primitive.NewObjectID(),
-		Name:     request.Name,
-		Email:    request.Email,
-		Password: request.Password,
+		Name:      request.Name,
+		Login:     request.Login,
+		Last_Name: request.Last_Name,
+		Password:  request.Password,
 	}
 
-	err = sc.SignupUsecase.Create(c, &user)
+	err = sc.SignupUsecase.Create(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return

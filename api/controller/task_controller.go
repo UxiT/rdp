@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/domain"
+	"github.com/UxiT/rdp/domain"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -41,14 +41,14 @@ func (tc *TaskController) Create(c *gin.Context) {
 	})
 }
 
-func (u *TaskController) Fetch(c *gin.Context) {
-	userID := c.GetString("x-user-id")
+// func (u *TaskController) Fetch(c *gin.Context) {
+// 	userID := c.GetString("x-user-id")
 
-	tasks, err := u.TaskUsecase.FetchByUserID(c, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
-		return
-	}
+// 	tasks, err := u.TaskUsecase.FetchByUserID(c, userID)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, tasks)
-}
+// 	c.JSON(http.StatusOK, tasks)
+// }

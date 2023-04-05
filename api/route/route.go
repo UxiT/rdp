@@ -3,14 +3,17 @@ package route
 import (
 	"time"
 
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/api/middleware"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/bootstrap"
-	"github.com/amitshekhariitbhu/go-backend-clean-architecture/mongo"
+	"github.com/UxiT/rdp/api/middleware"
+	"github.com/UxiT/rdp/bootstrap"
+	"github.com/UxiT/rdp/db"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gin.Engine) {
+func Setup(env *bootstrap.Env, timeout time.Duration, db db.Database, gin *gin.Engine) {
 	publicRouter := gin.Group("")
+
+	publicRouter.Use(cors.Default())
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
 	NewLoginRouter(env, timeout, db, publicRouter)
@@ -19,7 +22,8 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db mongo.Database, gin *gi
 	protectedRouter := gin.Group("")
 	// Middleware to verify AccessToken
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
+	protectedRouter.Use(cors.Default())
 	// All Private APIs
-	NewProfileRouter(env, timeout, db, protectedRouter)
-	NewTaskRouter(env, timeout, db, protectedRouter)
+	// NewProfileRouter(env, timeout, db, protectedRouter)
+	// NewTaskRouter(env, timeout, db, protectedRouter)
 }
