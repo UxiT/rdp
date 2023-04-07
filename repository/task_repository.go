@@ -20,10 +20,16 @@ func NewTaskRepository(db db.Database, collection string) domain.TaskRepository 
 }
 
 func (tr *taskRepository) Create(c context.Context, task *domain.Task) error {
-	var fields []string
-	var values []string
+	var fields = []string{"name", "last_name", "login", "password"}
+	var values = []string{}
 
-	_, err := tr.database.InsertOne(fields, values, "tasks")
+	data := make([]interface{}, len(values))
+
+	for i, s := range values {
+		data[i] = s
+	}
+
+	err := tr.database.InsertOne(fields, data, "tasks")
 
 	return err
 }

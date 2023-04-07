@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 
@@ -112,17 +111,11 @@ func (d *Database) Delete(entity *Entity, table string) error {
 	return nil
 }
 
-func (db *Database) InsertOne(fields []string, data interface{}, table string) (int64, error) {
+func (db *Database) InsertOne(fields []string, data []interface{}, table string) error {
 	query := `INSERT INTO users (%s) VALUES (%s) RETURNING id`
 
-	values := reflect.ValueOf(data).Elem()
-
-	if values.NumField() != len(fields) {
-		log.Fatal("Incorect insertion data")
-	}
-
 	var placeholders []string
-	for i := 0; i < values.NumField(); i++ {
+	for i := 0; i < len(fields); i++ {
 		placeholders = append(placeholders, fmt.Sprintf("$%d", i+1))
 	}
 
@@ -130,18 +123,11 @@ func (db *Database) InsertOne(fields []string, data interface{}, table string) (
 	query = fmt.Sprintf(query, strings.Join(fields, ", "), strings.Join(placeholders, ", "))
 
 	// Execute the query and retrieve the inserted ID
-	var id int64
-	res, err := db.db.Exec(query, values)
+	_, err := db.db.Exec(query, data...)
 
 	if err != nil {
-		return 0, fmt.Errorf("failed to insert: %v", err)
+		return fmt.Errorf("failed to insert: %v", err)
 	}
 
-	id, err = res.LastInsertId()
-
-	if err != nil {
-		return 0, fmt.Errorf("failed to fetch inserted id: %v", err)
-	}
-
-	return id, nil
+	return nil
 }

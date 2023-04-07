@@ -18,10 +18,16 @@ func NewUserRepository(db db.Database, collection string) domain.UserRepository 
 }
 
 func (ur *userRepository) Create(user *domain.User) error {
-	// var fields = []string{"name", "last_name", "login", "password"}
-	// var values =
+	var fields = []string{"name", "last_name", "login", "password"}
+	var values = []string{user.Name, user.Last_Name, user.Login, user.Password}
 
-	_, err := ur.database.InsertOne(fields, values, "users")
+	data := make([]interface{}, len(values))
+
+	for i, s := range values {
+		data[i] = s
+	}
+
+	err := ur.database.InsertOne(fields, data, "users")
 
 	return err
 }
