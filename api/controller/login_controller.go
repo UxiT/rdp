@@ -7,16 +7,17 @@ import (
 
 	"github.com/UxiT/rdp/bootstrap"
 	"github.com/UxiT/rdp/domain"
+	auth "github.com/UxiT/rdp/domain/auth"
 	"github.com/gin-gonic/gin"
 )
 
 type LoginController struct {
-	LoginUsecase domain.LoginUsecase
+	LoginUsecase auth.LoginUsecase
 	Env          *bootstrap.Env
 }
 
 func (lc *LoginController) Login(c *gin.Context) {
-	var request domain.LoginRequest
+	var request auth.LoginRequest
 
 	err := c.ShouldBind(&request)
 	if err != nil {
@@ -24,7 +25,7 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := lc.LoginUsecase.GetUserByLogin(request.Login)
+	user, err := lc.LoginUsecase.GetUserByLogin(c, request.Login)
 	if err != nil {
 		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: err.Error()})
 		return
@@ -35,19 +36,19 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := lc.LoginUsecase.CreateAccessToken(&user, lc.Env.AccessTokenSecret, lc.Env.AccessTokenExpiryHour)
+	accessToken, err := lc.LoginUsecase.CreateAccessToken(c, &user, lc.Env.AccessTokenSecret, lc.Env.AccessTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	refreshToken, err := lc.LoginUsecase.CreateRefreshToken(&user, lc.Env.RefreshTokenSecret, lc.Env.RefreshTokenExpiryHour)
+	refreshToken, err := lc.LoginUsecase.CreateRefreshToken(c, &user, lc.Env.RefreshTokenSecret, lc.Env.RefreshTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	loginResponse := domain.LoginResponse{
+	loginResponse := auth.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}
