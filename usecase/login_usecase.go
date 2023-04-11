@@ -22,7 +22,7 @@ func NewLoginUsecase(userRepository domain.UserRepository, timeout time.Duration
 }
 
 func (lu *loginUsecase) GetUserByLogin(c context.Context, login string) (domain.User, error) {
-	return lu.userRepository.GetByLogin(login)
+	return lu.userRepository.GetByField("login", login)
 }
 
 func (lu *loginUsecase) CreateAccessToken(c context.Context, user *domain.User, secret string, expiry int) (accessToken string, err error) {

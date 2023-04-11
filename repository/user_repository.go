@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/UxiT/rdp/db"
+	"github.com/UxiT/rdp/db/query"
 	"github.com/UxiT/rdp/domain"
 )
 
@@ -32,16 +35,20 @@ func (ur *userRepository) Create(user *domain.User) error {
 	return err
 }
 
-func (ur *userRepository) GetByLogin(login string) (domain.User, error) {
-	var user domain.User
-	err := ur.database.GetRecordByField("users", "login", login, &user)
+func (ur *userRepository) GetByField(column string, value string) (domain.User, error) {
+	var userInterface interface{} = domain.User{}
+
+	builder := query.NewBuilder("users")
+	builder.Where(column, "=", value)
+
+	userInterface, err := ur.database.GetByQuery(*builder.GetQuery(), &userInterface)
+
+	user, ok := userInterface.(domain.User)
+
+	if !ok {
+		fmt.Errorf("UserInterface does not contain User struct")
+	}
 
 	return user, err
-}
 
-func (ur *userRepository) GetById(login string) (domain.User, error) {
-	var user domain.User
-	err := ur.database.GetRecordByField("users", "id", login, &user)
-
-	return user, err
 }

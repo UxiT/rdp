@@ -26,7 +26,7 @@ func (su *signupUsecase) Create(c context.Context, user *domain.User) error {
 }
 
 func (su *signupUsecase) GetUserByLogin(c context.Context, login string) (domain.User, error) {
-	return su.userRepository.GetByLogin(login)
+	return su.userRepository.GetByField("login", login)
 }
 
 func (su *signupUsecase) CreateAccessToken(c context.Context, user *domain.User, secret string, expiry int) (accessToken string, err error) {

@@ -2,19 +2,13 @@ package db
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 
+	"github.com/UxiT/rdp/db/query"
 	_ "github.com/lib/pq" // Import PostgreSQL driver
 )
-
-type Entity struct {
-	ID        int64
-	CreatedAt string
-	UpdatedAt string
-}
 
 type Database struct {
 	db *sql.DB
@@ -36,78 +30,36 @@ func (d *Database) Close() error {
 	return d.db.Close()
 }
 
-func (d *Database) GetRecordByField(table string, field string, value interface{}, record interface{}) error {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = $1", table, field)
-	row := d.db.QueryRow(query, value)
+func (d *Database) GetByQuery(query query.Query, model *any) (interface{}, error) {
+	rows, err := d.db.Query(query.QueryString, query.Bindings...)
 
-	// Get the struct type and value using reflection
-	structType := reflect.TypeOf(record).Elem()
-	structValue := reflect.ValueOf(record).Elem()
-
-	// Create pointers to the struct fields
-	pointers := make([]interface{}, structType.NumField())
-	for i := 0; i < structType.NumField(); i++ {
-		field := structType.Field(i)
-		pointers[i] = structValue.FieldByName(field.Name).Addr().Interface()
-	}
-
-	// Scan the row and populate the struct fields
-	err := row.Scan(pointers...)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("record not found")
-		}
-		return fmt.Errorf("failed to get record: %v", err)
+		return nil, fmt.Errorf("Query error")
 	}
 
-	return nil
-}
+	pointers := parseStruct(model)
 
-// GetByID retrieves a single entity by ID
-func (d *Database) GetByID(id int64, table string) (Entity, error) {
-	var entity Entity
-	query := fmt.Sprintf("SELECT * FROM %s WHERE id=$1", table)
-	row := d.db.QueryRow(query, id)
-	if err := row.Scan(&entity.ID, &entity.CreatedAt, &entity.UpdatedAt); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return entity, fmt.Errorf("%s with id %d not found", table, id)
-		}
-		return entity, err
-	}
-	return entity, nil
+	err = rows.Scan(pointers...)
+
+	return model, err
 }
 
 // Update updates an existing entity in the database
-func (d *Database) Update(entity *Entity, table string) error {
-	query := fmt.Sprintf("UPDATE %s SET updated_at=NOW() WHERE id=$1", table)
-	result, err := d.db.Exec(query, entity.ID)
-	if err != nil {
-		return err
-	}
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%s with id %d not found", table, entity.ID)
-	}
-	return nil
-}
+func (d *Database) CreateUpdateDelete(query query.Query) error {
+	result, err := d.db.Exec(query.QueryString)
 
-// Delete deletes an existing entity from the database
-func (d *Database) Delete(entity *Entity, table string) error {
-	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", table)
-	result, err := d.db.Exec(query, entity.ID)
 	if err != nil {
 		return err
 	}
 	rowsAffected, err := result.RowsAffected()
+
 	if err != nil {
 		return err
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%s with id %d not found", table, entity.ID)
+		return fmt.Errorf("Error changing table %s", query.Table)
 	}
+
 	return nil
 }
 
@@ -130,4 +82,18 @@ func (db *Database) InsertOne(fields []string, data []interface{}, table string)
 	}
 
 	return nil
+}
+
+func parseStruct(model interface{}) []interface{} {
+	structType := reflect.TypeOf(model).Elem()
+	structValue := reflect.ValueOf(model).Elem()
+
+	// Create pointers to the struct fields
+	pointers := make([]interface{}, structType.NumField())
+	for i := 0; i < structType.NumField(); i++ {
+		field := structType.Field(i)
+		pointers[i] = structValue.FieldByName(field.Name).Addr().Interface()
+	}
+
+	return pointers
 }

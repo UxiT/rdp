@@ -1,8 +1,7 @@
-package cources
+package courses
 
 import (
 	"context"
-	"github.com/UxiT/rdp/db"
 )
 
 type Course struct {
@@ -14,8 +13,9 @@ type Course struct {
 
 type CourseModel interface {
 	Create(c context.Context, course Course) error
-	GetByGroup(c context.Context, group_id int64) (error, db.Entity)
-	FetchByUser(c context.Context, user_id int64) error
+	GetByID(c context.Context, id string) (Course, error)
+	GetByGroup(c context.Context, group_id string) ([]Course, error)
+	FetchByUser(c context.Context, user_id string) ([]Course, error)
 }
 
 func (c *Course) GetTable() string {
@@ -29,7 +29,7 @@ func (c *Course) GetFillableFields() []string {
 }
 
 func (c *Course) GetValues() []interface{} {
-	data := make([]interface{}, len(g.GetFillableFields()))
+	data := make([]interface{}, len(c.GetFillableFields()))
 
 	data = append(data, c.Title)
 
