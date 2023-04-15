@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/UxiT/rdp/domain"
@@ -20,7 +21,13 @@ func NewRefreshTokenUsecase(userRepository domain.UserRepository, timeout time.D
 }
 
 func (rtu *refreshTokenUsecase) GetUserById(id string) (domain.User, error) {
-	return rtu.userRepository.GetByField("id", id)
+	users, err := rtu.userRepository.GetByField("id", id)
+
+	if err != nil {
+		fmt.Errorf("User with provided login doesn't exist")
+	}
+
+	return users[0], nil
 }
 
 func (rtu *refreshTokenUsecase) CreateAccessToken(user *domain.User, secret string, expiry int) (accessToken string, err error) {

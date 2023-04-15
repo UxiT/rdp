@@ -147,7 +147,7 @@ func addWhereConditions(query *Query) {
 
 	if len(query.Wheres) > 0 {
 		for i, where := range query.Wheres {
-			whereString := fmt.Sprintf("%s %s %s $%d ", concat, where.Field, where.Operand, query.Bindings[i+1])
+			whereString := fmt.Sprintf("%s %s %s $%d ", concat, where.Field, where.Operand, i+1)
 			query.QueryString += whereString
 			concat = "AND"
 		}

@@ -16,5 +16,5 @@ type User struct {
 
 type UserRepository interface {
 	Create(user *User) error
-	GetByField(column string, login string) (User, error)
+	GetByField(column string, login string) ([]User, error)
 }

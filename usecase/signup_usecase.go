@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/UxiT/rdp/domain"
@@ -26,7 +27,13 @@ func (su *signupUsecase) Create(c context.Context, user *domain.User) error {
 }
 
 func (su *signupUsecase) GetUserByLogin(c context.Context, login string) (domain.User, error) {
-	return su.userRepository.GetByField("login", login)
+	users, err := su.userRepository.GetByField("login", login)
+
+	if err != nil {
+		fmt.Errorf("User with provided login doesn't exist")
+	}
+
+	return users[0], nil
 }
 
 func (su *signupUsecase) CreateAccessToken(c context.Context, user *domain.User, secret string, expiry int) (accessToken string, err error) {

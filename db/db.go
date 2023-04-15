@@ -30,18 +30,44 @@ func (d *Database) Close() error {
 	return d.db.Close()
 }
 
-func (d *Database) GetByQuery(query query.Query, model *any) (interface{}, error) {
+func (d *Database) GetByQuery(query query.Query, destType reflect.Type) ([]interface{}, error) {
 	rows, err := d.db.Query(query.QueryString, query.Bindings...)
 
 	if err != nil {
-		return nil, fmt.Errorf("Query error")
+		return nil, err
 	}
 
-	pointers := parseStruct(model)
+	defer rows.Close()
 
-	err = rows.Scan(pointers...)
+	// Get the slice type for the destination struct type.
+	destSliceType := reflect.SliceOf(destType)
 
-	return model, err
+	// Create a new slice of the destination type.
+	destSlice := reflect.MakeSlice(destSliceType, 0, 0)
+
+	// Loop over the rows and scan each row into a new instance of the destination struct type.
+	for rows.Next() {
+		dest := reflect.New(destType).Elem()
+		pointers := getPointersToFields(dest)
+		err := rows.Scan(pointers...)
+		if err != nil {
+			return nil, err
+		}
+		destSlice = reflect.Append(destSlice, dest)
+	}
+
+	// If there was an error scanning rows, return it.
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Convert the slice of reflect.Values to a slice of interfaces.
+	destSliceInterfaces := make([]interface{}, destSlice.Len())
+	for i := 0; i < destSlice.Len(); i++ {
+		destSliceInterfaces[i] = destSlice.Index(i).Interface()
+	}
+
+	return destSliceInterfaces, nil
 }
 
 // Update updates an existing entity in the database
@@ -57,7 +83,7 @@ func (d *Database) CreateUpdateDelete(query query.Query) error {
 		return err
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("Error changing table %s", query.Table)
+		return fmt.Errorf("error changing table %s", query.Table)
 	}
 
 	return nil
@@ -84,15 +110,12 @@ func (db *Database) InsertOne(fields []string, data []interface{}, table string)
 	return nil
 }
 
-func parseStruct(model interface{}) []interface{} {
-	structType := reflect.TypeOf(model).Elem()
-	structValue := reflect.ValueOf(model).Elem()
+func getPointersToFields(value reflect.Value) []interface{} {
+	numFields := value.NumField()
+	pointers := make([]interface{}, numFields)
 
-	// Create pointers to the struct fields
-	pointers := make([]interface{}, structType.NumField())
-	for i := 0; i < structType.NumField(); i++ {
-		field := structType.Field(i)
-		pointers[i] = structValue.FieldByName(field.Name).Addr().Interface()
+	for i := 0; i < numFields; i++ {
+		pointers[i] = value.Field(i).Addr().Interface()
 	}
 
 	return pointers

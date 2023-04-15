@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS 'cources'
+DROP TABLE IF EXISTS courses;

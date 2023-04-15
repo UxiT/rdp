@@ -20,9 +20,9 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db db.Database, gin *gin.E
 	NewRefreshTokenRouter(env, timeout, db, publicRouter)
 
 	protectedRouter := gin.Group("")
+	protectedRouter.Use(cors.Default())
 	// Middleware to verify AccessToken
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
-	protectedRouter.Use(cors.Default())
 	// All Private APIs
 	// NewProfileRouter(env, timeout, db, protectedRouter)
 	// NewTaskRouter(env, timeout, db, protectedRouter)

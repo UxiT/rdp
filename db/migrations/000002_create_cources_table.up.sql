@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS 'cources' (
+CREATE TABLE IF NOT EXISTS courses (
     id SERIAL PRIMARY KEY,
-    name char(256) NOT NULL,
+    title char(256) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 )

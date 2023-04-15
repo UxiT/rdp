@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -25,6 +26,8 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
+	fmt.Print(string(c.Request.Referer()))
+
 	user, err := lc.LoginUsecase.GetUserByLogin(c, request.Login)
 	if err != nil {
 		c.JSON(http.StatusNotFound, domain.ErrorResponse{Message: err.Error()})
@@ -36,13 +39,13 @@ func (lc *LoginController) Login(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := lc.LoginUsecase.CreateAccessToken(c, &user, lc.Env.AccessTokenSecret, lc.Env.AccessTokenExpiryHour)
+	accessToken, err := lc.LoginUsecase.CreateAccessToken(c, user, lc.Env.AccessTokenSecret, lc.Env.AccessTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	refreshToken, err := lc.LoginUsecase.CreateRefreshToken(c, &user, lc.Env.RefreshTokenSecret, lc.Env.RefreshTokenExpiryHour)
+	refreshToken, err := lc.LoginUsecase.CreateRefreshToken(c, user, lc.Env.RefreshTokenSecret, lc.Env.RefreshTokenExpiryHour)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 		return

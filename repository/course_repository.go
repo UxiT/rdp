@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/UxiT/rdp/db"
 	"github.com/UxiT/rdp/db/query"
@@ -33,34 +35,55 @@ func (cr *courseRepository) GetByID(c context.Context, courseId string) (courses
 	builder := query.NewBuilder("courses")
 	builder.Where("id", "=", courseId)
 
-	courseInterface, err := cr.database.GetByQuery(*builder.GetQuery(), &courseInterface)
+	courseInterface, err := cr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(courses.Course{}))
 
 	course, ok := courseInterface.(courses.Course)
 
 	if !ok {
-		fmt.Errorf("UserInterface does not contain User struct")
+		fmt.Errorf("userInterface does not contain User struct")
 	}
 
 	return course, err
 }
 
 func (cr *courseRepository) GetByGroup(c context.Context, group_id string) ([]courses.Course, error) {
-	var courseInterface interface{} = courses.Course{}
+	var coursesByGroup []courses.Course
 
 	builder := query.NewBuilder("courses")
 	builder.Where("group_id", "=", group_id)
 
-	courseInterface, err := cr.database.GetByQuery(*builder.GetQuery(), &courseInterface)
+	courseInterfaces, err := cr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(courses.Course{}))
 
-	course, ok := courseInterface.(courses.Course)
+	for _, c := range courseInterfaces {
+		course, ok := c.(courses.Course)
 
-	if !ok {
-		fmt.Errorf("UserInterface does not contain User struct")
+		if !ok {
+			return nil, errors.New("userInterface does not contain User struct")
+		} else {
+			coursesByGroup = append(coursesByGroup, course)
+		}
 	}
 
-	return course, err
+	return coursesByGroup, err
 }
 
 func (cr *courseRepository) FetchByUser(c context.Context, user_id string) ([]courses.Course, error) {
-	return c.Err()
+	var coursesByUser []courses.Course
+
+	builder := query.NewBuilder("courses")
+	builder.Where("user_id", "=", user_id)
+
+	courseInterfaces, err := cr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(courses.Course{}))
+
+	for _, c := range courseInterfaces {
+		course, ok := c.(courses.Course)
+
+		if !ok {
+			fmt.Errorf("UserInterface does not contain User struct")
+		} else {
+			coursesByUser = append(coursesByUser, course)
+		}
+	}
+
+	return coursesByUser, err
 }
