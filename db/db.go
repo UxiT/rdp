@@ -72,8 +72,10 @@ func (d *Database) GetByQuery(query query.Query, destType reflect.Type) ([]inter
 
 // Update updates an existing entity in the database
 func (d *Database) CreateUpdateDelete(query query.Query) error {
-	result, err := d.db.Exec(query.QueryString)
+	result, err := d.db.Exec(query.QueryString, query.Bindings...)
 
+	fmt.Printf("r: %v\n", result)
+	fmt.Printf("q: %s, b: %v", query.QueryString, query.Bindings)
 	if err != nil {
 		return err
 	}
@@ -82,6 +84,7 @@ func (d *Database) CreateUpdateDelete(query query.Query) error {
 	if err != nil {
 		return err
 	}
+
 	if rowsAffected == 0 {
 		return fmt.Errorf("error changing table %s", query.Table)
 	}

@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/UxiT/rdp/domain"
@@ -29,8 +28,6 @@ func (lu *loginUsecase) GetUserByLogin(c context.Context, login string) (*domain
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}
-
-	fmt.Printf("%#v", users)
 
 	if len(users) == 0 {
 		return nil, errors.New("invalid credentials")

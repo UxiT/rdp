@@ -9,6 +9,7 @@ import (
 	"github.com/UxiT/rdp/domain"
 	"github.com/UxiT/rdp/repository"
 	"github.com/UxiT/rdp/usecase"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,4 +20,5 @@ func NewLoginRouter(env *bootstrap.Env, timeout time.Duration, db db.Database, g
 		Env:          env,
 	}
 	group.POST("/login", lc.Login)
+	group.OPTIONS("/login", cors.Default())
 }

@@ -21,6 +21,7 @@ type join struct {
 type Query struct {
 	Table       string
 	QueryString string
+	Action      string
 	Wheres      []where
 	Joins       []join
 	Bindings    []any
@@ -79,12 +80,19 @@ func (b *Builder) Read() {
 func (b *Builder) Create(columns []string, values [][]string) {
 	b.Query.QueryString = fmt.Sprintf("INSERT INTO %s (%s) VALUES", b.Query.Table, strings.Join(columns, ","))
 
+	fmt.Printf("Values: %v\n", values)
+
+	var row string
+	var placeholders [][]string
+
 	for i, value := range values {
-		row := "("
+		row = "("
 
 		for j, v := range value {
-			row += fmt.Sprintf("$%d", j+1)
+			fmt.Printf("v: %v\n", v)
+			row += fmt.Sprintf("'$%d'", j+1)
 			b.Query.Bindings = append(b.Query.Bindings, v)
+			fmt.Printf("b: %v", b.Query.Bindings...)
 		}
 
 		row += ")"
@@ -95,6 +103,9 @@ func (b *Builder) Create(columns []string, values [][]string) {
 			row += ","
 		}
 	}
+	fmt.Printf("row: %v, bind: %v\n", row, b.Query.Bindings)
+
+	b.Query.QueryString += row
 }
 
 func (b *Builder) Delete() {

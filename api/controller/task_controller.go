@@ -22,7 +22,6 @@ func (tc *TaskController) Create(c *gin.Context) {
 	}
 
 	userID := c.GetString("x-user-id")
-	task.ID = primitive.NewObjectID()
 
 	task.UserID, err = primitive.ObjectIDFromHex(userID)
 	if err != nil {

@@ -23,8 +23,14 @@ func NewCourseRepository(db db.Database, collection string) courses.CourseModel 
 	}
 }
 
-func (cr *courseRepository) Create(c context.Context, course courses.Course) error {
-	err := cr.database.InsertOne(course.GetFillableFields(), course.GetValues(), course.GetTable())
+func (cr *courseRepository) Create(c context.Context, request courses.CreateCourseRequest) error {
+	builder := query.NewBuilder("courses")
+	var columns [][]string
+	columns = append(columns, []string{request.Title})
+
+	builder.Create([]string{"title"}, columns)
+
+	err := cr.database.CreateUpdateDelete(*builder.GetQuery())
 
 	return err
 }
@@ -40,7 +46,7 @@ func (cr *courseRepository) GetByID(c context.Context, courseId string) (courses
 	course, ok := courseInterface.(courses.Course)
 
 	if !ok {
-		fmt.Errorf("userInterface does not contain User struct")
+		return courses.Course{}, fmt.Errorf("userInterface does not contain User struct")
 	}
 
 	return course, err
@@ -79,7 +85,7 @@ func (cr *courseRepository) FetchByUser(c context.Context, user_id string) ([]co
 		course, ok := c.(courses.Course)
 
 		if !ok {
-			fmt.Errorf("UserInterface does not contain User struct")
+			return []courses.Course{}, fmt.Errorf("userInterface does not contain User struct")
 		} else {
 			coursesByUser = append(coursesByUser, course)
 		}

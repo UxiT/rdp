@@ -13,17 +13,25 @@ import (
 func Setup(env *bootstrap.Env, timeout time.Duration, db db.Database, gin *gin.Engine) {
 	publicRouter := gin.Group("")
 
-	publicRouter.Use(cors.Default())
+	publicRouter.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Authorization", "Content-Type", "Access-Control-Allow-Origin"},
+	}))
 	// All Public APIs
 	NewSignupRouter(env, timeout, db, publicRouter)
 	NewLoginRouter(env, timeout, db, publicRouter)
 	NewRefreshTokenRouter(env, timeout, db, publicRouter)
 
 	protectedRouter := gin.Group("")
-	protectedRouter.Use(cors.Default())
+	protectedRouter.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders: []string{"Authorization", "Content-Type", "Access-Control-Allow-Origin"},
+	}))
 	// Middleware to verify AccessToken
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
 	// All Private APIs
-	// NewProfileRouter(env, timeout, db, protectedRouter)
+	NewCoursesRouter(env, timeout, db, protectedRouter)
 	// NewTaskRouter(env, timeout, db, protectedRouter)
 }
