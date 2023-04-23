@@ -77,7 +77,12 @@ func (cr *courseRepository) FetchByUser(c context.Context, user_id string) ([]co
 	var coursesByUser []courses.Course
 
 	builder := query.NewBuilder("courses")
-	builder.Where("user_id", "=", user_id)
+	builder.Select([]string{"courses.id", "courses.title", "courses.created_at", "courses.updated_at"})
+	builder.Join("groups_courses gc", "gc.course_id", "=", "courses.id")
+	builder.Join("groups", "groups.id", "=", "gc.group_id")
+	builder.Join("students", "students.group_id", "=", "groups.id")
+	builder.Where("students.user_id", "=", user_id)
+	builder.Read()
 
 	courseInterfaces, err := cr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(courses.Course{}))
 

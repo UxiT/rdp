@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/UxiT/rdp/bootstrap"
@@ -17,6 +18,7 @@ type CoursesController struct {
 func (cc *CoursesController) FetchByUser(c *gin.Context) {
 	userID := c.GetString("x-user-id")
 
+	fmt.Printf("\nuser_ID: %s\n", userID)
 	courses, err := cc.CoursesUsecase.FetchByUser(c, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
@@ -43,7 +45,7 @@ func (cc *CoursesController) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 	}
 
-	c.JSON(http.StatusOK, request.Title)
+	c.JSON(http.StatusOK, "")
 }
 
 func (cc *CoursesController) AttachTask(c *gin.Context) {

@@ -12,6 +12,7 @@ type where struct {
 }
 
 type join struct {
+	Table   string
 	First   string
 	Operand string
 	Second  string
@@ -39,7 +40,7 @@ type BuilderRepository interface {
 	Delete()
 	Select(columns []string)
 	Where(column string, operand string, value string)
-	Join(first string, operand string, second string)
+	Join(table, first, operand, second string)
 	LeftJoin(first string, operand string, second string)
 	RightJoin(first string, operand string, second string)
 	GetQuery() *Query
@@ -78,34 +79,32 @@ func (b *Builder) Read() {
 }
 
 func (b *Builder) Create(columns []string, values [][]string) {
-	b.Query.QueryString = fmt.Sprintf("INSERT INTO %s (%s) VALUES", b.Query.Table, strings.Join(columns, ","))
-
-	fmt.Printf("Values: %v\n", values)
+	b.Query.QueryString = fmt.Sprintf("INSERT INTO %s (%s) VALUES ", b.Query.Table, strings.Join(columns, ","))
 
 	var row string
-	var placeholders [][]string
 
 	for i, value := range values {
-		row = "("
+		rowPlaceholders := make([]string, len(value))
 
 		for j, v := range value {
 			fmt.Printf("v: %v\n", v)
-			row += fmt.Sprintf("'$%d'", j+1)
+
+			rowPlaceholders[i] = fmt.Sprintf("$%d", len(value)*i+j+1)
 			b.Query.Bindings = append(b.Query.Bindings, v)
-			fmt.Printf("b: %v", b.Query.Bindings...)
+
+			fmt.Printf("palceholders: %v", rowPlaceholders)
 		}
+		fmt.Printf("join: %s", strings.Join(rowPlaceholders, ","))
 
-		row += ")"
+		row += fmt.Sprintf("(%v)", strings.Join(rowPlaceholders, ","))
 
-		if i == len(values)+1 {
-			row += ";"
-		} else {
+		if i < len(values)-1 {
 			row += ","
 		}
 	}
 	fmt.Printf("row: %v, bind: %v\n", row, b.Query.Bindings)
 
-	b.Query.QueryString += row
+	b.Query.QueryString += fmt.Sprintf("%s;", row)
 }
 
 func (b *Builder) Delete() {
@@ -126,12 +125,12 @@ func (b *Builder) Where(column string, operand string, value string) {
 }
 
 // Joins
-func (b *Builder) Join(first string, operand string, second string) {
-	nJoin := join{First: first, Operand: operand, Second: second, Type: "INNER"}
+func (b *Builder) Join(table, first, operand, second string) {
+	nJoin := join{Table: table, First: first, Operand: operand, Second: second, Type: "INNER"}
 	b.Query.Joins = append(b.Query.Joins, nJoin)
 }
 
-func (b *Builder) LeftJoin(first string, operand string, second string) {
+func (b *Builder) LeftJoin(first, operand, second string) {
 	nJoin := join{First: first, Operand: operand, Second: second, Type: "LEFT"}
 	b.Query.Joins = append(b.Query.Joins, nJoin)
 }
@@ -168,7 +167,7 @@ func addWhereConditions(query *Query) {
 func addJoins(query *Query) {
 	if len(query.Joins) > 0 {
 		for _, join := range query.Joins {
-			joinString := fmt.Sprintf("%s JOIN ON %s %s %s ", join.Type, join.First, join.Operand, join.Second)
+			joinString := fmt.Sprintf("%s JOIN %s ON %s %s %s ", join.Type, join.Table, join.First, join.Operand, join.Second)
 			query.QueryString += joinString
 		}
 	}
