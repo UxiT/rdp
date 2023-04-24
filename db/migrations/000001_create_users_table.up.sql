@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name char(256) DEFAULT NULL,
     login char(256) NOT NULL,
     password char(256) NOT NULL,
+    profile char(256),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

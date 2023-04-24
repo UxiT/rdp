@@ -33,5 +33,6 @@ func Setup(env *bootstrap.Env, timeout time.Duration, db db.Database, gin *gin.E
 	protectedRouter.Use(middleware.JwtAuthMiddleware(env.AccessTokenSecret))
 	// All Private APIs
 	NewCoursesRouter(env, timeout, db, protectedRouter)
+	NewUserTaskRouter(env, timeout, db, protectedRouter)
 	// NewTaskRouter(env, timeout, db, protectedRouter)
 }

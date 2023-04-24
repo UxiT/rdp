@@ -10,6 +10,7 @@ type User struct {
 	Last_Name  string `json:"last_name"`
 	Login      string `json:"login"`
 	Password   string `json:"password"`
+	Profile    string `json:"profile"`
 	Created_At string `json:"created_at"`
 	Updated_At string `json:"updated_at"`
 }

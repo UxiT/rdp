@@ -1,53 +1,77 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/UxiT/rdp/bootstrap"
 	"github.com/UxiT/rdp/domain"
+	task "github.com/UxiT/rdp/domain/tasks"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TaskController struct {
-	TaskUsecase domain.TaskUsecase
+	UserTaskModel task.UserTaskModel
+	TaskModel     task.TaskModel
+	Env           *bootstrap.Env
 }
 
-func (tc *TaskController) Create(c *gin.Context) {
-	var task domain.Task
+func (tc *TaskController) GetByCourse(c *gin.Context) {
+	userId := c.GetString("x-user-id")
+	profile := c.GetString("x-user-profile")
+	courseId, ok := c.GetQuery("course_id")
 
-	err := c.ShouldBind(&task)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
-		return
+	if !ok {
+		fmt.Errorf("Invalid courseId: %v", courseId)
 	}
 
-	userID := c.GetString("x-user-id")
+	var tasksR []task.UserTask
 
-	task.UserID, err = primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, domain.ErrorResponse{Message: err.Error()})
-		return
+	if profile == "student" {
+		tasks, err := tc.UserTaskModel.GetByCourse(c, userId, courseId)
+		tasksR = tasks
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, tasksR)
+	} else {
+		tasks, err := tc.UserTaskModel.GetByCourse(c, userId, courseId)
+		tasksR = tasks
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, tasksR)
 	}
-
-	err = tc.TaskUsecase.Create(c, &task)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, domain.SuccessResponse{
-		Message: "Task created successfully",
-	})
 }
 
-// func (u *TaskController) Fetch(c *gin.Context) {
-// 	userID := c.GetString("x-user-id")
+func (tc *TaskController) GetTask(c *gin.Context) {
+	userId := c.GetString("x-user-id")
+	profile := c.GetString("x-user-profile")
+	taskId := c.Param("id")
 
-// 	tasks, err := u.TaskUsecase.FetchByUserID(c, userID)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
-// 		return
-// 	}
+	if profile == "student" {
+		task, err := tc.TaskModel.Read(c, userId, taskId)
 
-// 	c.JSON(http.StatusOK, tasks)
-// }
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, task)
+	} else {
+		task, err := tc.TaskModel.Read(c, userId, taskId)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, task)
+	}
+}

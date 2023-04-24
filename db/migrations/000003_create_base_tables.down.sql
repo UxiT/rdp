@@ -1,8 +1,8 @@
 DROP TABLE IF EXISTS user_courses;
 DROP TABLE IF EXISTS groups_courses;
 DROP TABLE IF EXISTS teachers_groups;
+DROP TABLE IF EXISTS users_tasks;
 DROP TABLE IF EXISTS students;
 DROP TABLE IF EXISTS teachers;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS tasks;
-DROP TABLE IF EXISTS students_tasks;

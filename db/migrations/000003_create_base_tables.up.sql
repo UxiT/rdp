@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS user_courses (
 CREATE TABLE IF NOT EXISTS groups (
     id SERIAL PRIMARY KEY,
     title char(256),
+    study_period char(256),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -59,8 +60,9 @@ CREATE TABLE IF NOT EXISTS tasks (
     course_id int NOT NULL,
     theory_file char(256),
     rdp_config char(256),
-    description text NOT NULL,
+    description_text text NOT NULL,
     extra_file JSON,
+    FOREIGN KEY (course_id) references courses(id) on delete cascade,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -18,12 +18,14 @@ func JwtAuthMiddleware(secret string) gin.HandlerFunc {
 			authorized, err := tokenutil.IsAuthorized(authToken, secret)
 			if authorized {
 				userID, err := tokenutil.ExtractIDFromToken(authToken, secret)
+				profifle, err := tokenutil.ExtractIDFromToken(authToken, secret)
 				if err != nil {
 					c.JSON(http.StatusUnauthorized, domain.ErrorResponse{Message: err.Error()})
 					c.Abort()
 					return
 				}
 				c.Set("x-user-id", userID)
+				c.Set("x-user-pfofile", profifle)
 				c.Next()
 				return
 			}
