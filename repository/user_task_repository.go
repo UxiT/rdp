@@ -26,8 +26,8 @@ func (utr *userTaskRepository) Create(c context.Context) error {
 	return nil
 }
 
-func (utr *userTaskRepository) GetByCourse(c context.Context, userId string, courseId string) ([]task.UserTask, error) {
-	var userTasks []task.UserTask
+func (utr *userTaskRepository) GetByCourse(c context.Context, userId string, courseId string) ([]task.UserTaskResponse, error) {
+	var userTasks []task.UserTaskResponse
 	studentId, err := getStudentId(utr, userId)
 
 	if err != nil {
@@ -35,16 +35,27 @@ func (utr *userTaskRepository) GetByCourse(c context.Context, userId string, cou
 	}
 
 	builder := query.NewBuilder("users_tasks")
-	builder.Select([]string{"student_id", "task_id", "score", "max_score", "status", "report", "comment"})
+	builder.Select([]string{
+		"t.id as id",
+		"t.title",
+		"deadline",
+		"score",
+		"max_score",
+		"status",
+		"report",
+		"comment",
+		"c.title as course_title",
+	})
 	builder.Join("tasks as t", "t.id", "=", "task_id")
+	builder.Join("courses as c", "c.id", "=", "course_id")
 	builder.Where("student_id", "=", fmt.Sprintf("%d", *studentId))
 	builder.Where("t.course_id", "=", courseId)
 	builder.Read()
 
-	userTaskInerface, err := utr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(task.UserTask{}))
+	userTaskInerface, err := utr.database.GetByQuery(*builder.GetQuery(), reflect.TypeOf(task.UserTaskResponse{}))
 
 	for _, c := range userTaskInerface {
-		task, ok := c.(task.UserTask)
+		task, ok := c.(task.UserTaskResponse)
 
 		if !ok {
 			return nil, errors.New("userInterface does not contain User struct")

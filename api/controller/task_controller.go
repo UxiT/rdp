@@ -25,28 +25,24 @@ func (tc *TaskController) GetByCourse(c *gin.Context) {
 		fmt.Errorf("Invalid courseId: %v", courseId)
 	}
 
-	var tasksR []task.UserTask
-
 	if profile == "student" {
 		tasks, err := tc.UserTaskModel.GetByCourse(c, userId, courseId)
-		tasksR = tasks
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, tasksR)
+		c.JSON(http.StatusOK, tasks)
 	} else {
 		tasks, err := tc.UserTaskModel.GetByCourse(c, userId, courseId)
-		tasksR = tasks
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, domain.ErrorResponse{Message: err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, tasksR)
+		c.JSON(http.StatusOK, tasks)
 	}
 }
 

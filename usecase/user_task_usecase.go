@@ -25,7 +25,7 @@ func (utu *userTaskUsecase) Create(c context.Context) error {
 	return err
 }
 
-func (utu *userTaskUsecase) GetByCourse(c context.Context, studentId string, courseId string) ([]task.UserTask, error) {
+func (utu *userTaskUsecase) GetByCourse(c context.Context, studentId string, courseId string) ([]task.UserTaskResponse, error) {
 	return utu.userTaskModel.GetByCourse(c, studentId, courseId)
 }
 
